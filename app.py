@@ -50,7 +50,7 @@ def run(ca, sf, dt, ne, ds, te_std, ct, it, d, input, output):
     print(data.columns)
 
     print('processing...')
-    ionBlankThreshold = data['intensity'].mean()
+    ionBlankThreshold = blankData['intensity'].mean()
 
     data['Ion_Intensity'] = data.apply (lambda row: calcIonIntensity (row, it, ionBlankThreshold),axis=1)
 
