@@ -1,5 +1,9 @@
-# Usage
+# Quick Start
+```
+git clone https://github.com/wuyuehao/cells.git
+cd cells
 python3 app.py input output
+```
 
 
 # Get help
