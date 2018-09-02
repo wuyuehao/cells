@@ -1,5 +1,8 @@
-# cells
+# Usage
+python3 app.py input output
 
+
+# Get help
 ```
 python3 app.py  --help
 Usage: app.py [OPTIONS] INPUT OUTPUT
