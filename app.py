@@ -4,6 +4,7 @@ import numpy as np
 import os
 import datetime
 import time
+import matplotlib
 
 
 @click.command()
@@ -85,6 +86,23 @@ def run(ca, sf, dt, ne, ds, te_std, ct, it, d, input, output):
 
     result={'Ion Blank Threshold': ionBlankThreshold ,'Detected Cells': detectedCells, 'Mass Mean' : massMean, 'Mass Std' :massStd, 'Ionic Concentration':ionicConcentration}
 
+    max = data['Element_Mass'].max()
+    min = data['Element_Mass'].min()
+    bins100=[]
+    bins1000=[]
+    for i in range (0, 101):
+        bins100.append(min + i*(max-min)/100)
+
+
+    for i in range (0, 1001):
+        bins1000.append(min + i*(max-min)/1000)
+
+    data['Element_Mass_bin_100']  = pd.cut(data['Element_Mass'],bins=bins100,labels=bins100[:-1],include_lowest=True)
+    data['Element_Mass_bin_1000']  = pd.cut(data['Element_Mass'],bins=bins1000,labels=bins1000[:-1],include_lowest=True)
+
+    bin100Table = pd.value_counts(data["Element_Mass_bin_100"], sort=False)
+    bin1000Table = pd.value_counts(data["Element_Mass_bin_1000"], sort=False)
+
 
     print(result)
 
@@ -96,9 +114,17 @@ def run(ca, sf, dt, ne, ds, te_std, ct, it, d, input, output):
     cellsDf.to_csv(output+'/cells.csv', sep=',', encoding='utf-8')
     resultDf.to_csv(output+'/results.csv', sep=',', encoding='utf-8')
 
+
+    print("generating charts ...")
+
+    bin100Table.plot().get_figure().savefig(output+'/bin100.pdf')
+    bin1000Table.plot().get_figure().savefig(output+'/bin1000.pdf')
+
     end = time.time()
 
     print("Finished in " + str(end - start) +" sec" )
+
+
 
 
 def calcIonIntensity (row, it, ionBlankThreshold):
