@@ -15,7 +15,7 @@ import matplotlib
 @click.option('--ds', default=2100, prompt='Detection Sensitivity (cps/µl/L)', help='The Detection Sensitivity in cps/µl/L.')
 @click.option('--te_std', default='TRUE', prompt='TE_STD (T/F)', help='The boolean TE_STD value.')
 @click.option('--ct', default=85000 , prompt='Cell Threshold (cps)', help='The Cells Threshold in cps.')
-@click.option('--it', default=9550 , prompt='Ion threshold (cps)', help='The Ion Threshold in cps.')
+@click.option('--it', default=41000 , prompt='Ion threshold (cps)', help='The Ion Threshold in cps.')
 @click.option('-d', default=120 , prompt='Duration (s)', help='The duration in sec.')
 @click.argument('input')
 @click.argument('output')
@@ -53,12 +53,12 @@ def run(ca, sf, dt, ne, ds, te_std, ct, it, d, input, output):
     print('processing...')
     ionBlankThreshold = blankData['intensity'].mean()
 
-    data['Ion_Intensity'] = data.apply (lambda row: calcIonIntensity (row, it, ionBlankThreshold),axis=1)
+    data['Ion_Intensity'] = data.apply (lambda row: calcIonIntensity (row, ct, it, ionBlankThreshold),axis=1)
 
     ionIntensityAvg = data['Ion_Intensity'].mean()
 
 
-    data['Ion_Blank_Substracted'] = data.apply (lambda row: calcBlankSubstracted (row, it ,ionIntensityAvg),axis=1)
+    data['Blank_Substracted'] = data.apply (lambda row: calcBlankSubstracted (row, ct ,ionIntensityAvg),axis=1)
 
     data['Element_Mass'] = data.apply (lambda row: calcElementMass (row, dt, ds, sf, ne),axis=1)
 
@@ -127,12 +127,12 @@ def run(ca, sf, dt, ne, ds, te_std, ct, it, d, input, output):
 
 
 
-def calcIonIntensity (row, it, ionBlankThreshold):
+def calcIonIntensity (row, ct, it, ionBlankThreshold):
     intensity =  row['intensity']
-    if intensity == "" or np.isnan(intensity) or intensity > it :
+    if intensity == "" or np.isnan(intensity) or intensity > ct :
         return np.nan
     else:
-        if intensity > ionBlankThreshold :
+        if intensity > ionBlankThreshold and intensity < it:
             return intensity
     return 0
 
@@ -144,7 +144,7 @@ def calcBlankSubstracted (row, ionThreashold,ionIntensityAvg ):
 
 def calcElementMass (row, dt, ds, sf, ne):
 
-    intensity =  row['Ion_Blank_Substracted']
+    intensity =  row['Blank_Substracted']
     if(intensity != np.nan):
         return  intensity * dt/1000/ds*sf*ne/60*10000
     return np.nan
